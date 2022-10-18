@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,12 +12,71 @@ public static class General
 {
   private static Regex _endWord = new Regex(@"([\w\.]+)-$", RegexOptions.Compiled);
   private static Regex _firstWord = new Regex(@"^(\w+)", RegexOptions.Compiled);
+  private const int DEF_WIN_CYR = 1251;
+  private const int DEF_WIN_LAT = 1252;
+  private static Lazy<Encoding> DEF_LAT_ENC = new Lazy<Encoding>(() =>
+    Encoding.GetEncoding(DEF_WIN_LAT, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback));
+  private static Lazy<Encoding> DEF_CYR_ENC = new Lazy<Encoding>(() => Encoding.GetEncoding(DEF_WIN_CYR));
+
+  /// <summary>
+  /// Вся ли строка состоит из АКСИ-симоволов
+  /// </summary>
+  /// <param name="s">Проверяемая строка</param>
+  /// <returns>Да/нет</returns>
+  private static bool _isAllAscii(string s)
+  {
+    foreach (var c in s)
+      if (c > 127) return false;
+    return true;
+  }
+  /// <summary>
+  /// Попадают ли символы в диапазон CP1252
+  /// </summary>
+  /// <param name="s">Строка</param>
+  /// <returns>Да/нет</returns>
+  private static bool _isAllPseudoLatin1(string s)
+  {
+    foreach (var c in s)
+    {
+      if ( c > 127 && (!(c >= 'À' && c <= 'ÿ') && c != 0xa8 && c != 0xb8))
+        return false;
+      return true;
+    }
+    return true;
+  }
+  /// <summary>
+  /// Может ли знак являться восьмеричной цифрой?
+  /// </summary>
+  /// <param name="c">Знак</param>
+  /// <returns>Да/нет</returns>
+  private static bool _isOctalDigit(this char c)
+  {
+    if (c >= '0' && c <= '8') return true;
+    else return false;
+  }
   /// <summary>
   /// Получить нужную строку из узла КсМЛ
   /// </summary>
   /// <param name="node">Узел КсМЛ</param>
   /// <param name="s">Тип строки</param>
   /// <returns>Результат</returns>
+  public static bool TryRecode(string s, out string? result)
+  {
+    byte[]? preresult = null;
+    result = null;
+
+    try
+    {
+      preresult = DEF_LAT_ENC.Value.GetBytes(s.ToCharArray());
+    }
+    catch (EncoderFallbackException e)
+    {
+      return false;
+    }
+
+    result = DEF_CYR_ENC.Value.GetString(preresult);
+    return true;
+  }
   public static string GetString(this XmlNode node, string s) =>
           node.Attributes.GetNamedItem(s)?.InnerText;
   /// <summary>
@@ -33,8 +93,28 @@ public static class General
   /// <param name="root">Элемент</param>
   /// <param name="s">Тип строки</param>
   /// <returns>Результат</returns>
-  public static string GetInnerString(this XmlElement root, string s) =>
+  public static string? GetInnerString(this XmlElement root, string s) =>
     root?.GetElementsByTagName(s)?.Item(0)?.InnerText;
+
+  public static string? RepairString(string s)
+  {
+    if (String.IsNullOrWhiteSpace(s)) return s;
+
+    if (s[0] == '<' && s[s.Length - 1] == '>' && s.Length % 2 == 0)
+      return RepairHexString(s);
+    else if (s.Contains('\\') && _isAllAscii(s))
+    {
+      try { return _repairOctalString(s); }
+      catch (FormatException e) { return s; }
+    }
+    else if(_isAllPseudoLatin1(s))
+    {
+      if(TryRecode(s, out string? preresult))
+        return preresult;
+    }
+
+    return s;
+  }
   /// <summary>
   /// Восстановить строку из гекс-записи
   /// </summary>
@@ -53,9 +133,37 @@ public static class General
     return Encoding.GetEncoding(1251).GetString(newLine);
   }
   /// <summary>
+  /// Восстанавливает строку из восьмиричной записи
+  /// </summary>
+  /// <param name="s">Строка с восьмиричной записью</param>
+  /// <returns>Результат</returns>
+  private static string _repairOctalString(string s)
+  {
+    int inputLength = s.Length;
+    var output = new List<byte>(inputLength);
+
+    for (int i = 0; i < inputLength; i++)
+    {
+      if (s[i] == '\\')
+      {
+        if (inputLength >= i + 3 && s[i + 1]._isOctalDigit() && s[i + 2]._isOctalDigit()
+          && s[i + 3]._isOctalDigit())
+        {
+          var x = Convert.ToByte(s.Substring(i + 1, 3), 8);
+          output.Add(x);
+          i = i + 3;
+        }
+        else throw new FormatException();
+      }
+      else
+        output.Add((byte)s[i]);
+    }
+    return Encoding.GetEncoding(DEF_WIN_CYR).GetString(output.ToArray());
+  }
+  /// <summary>
   /// Предохранить от использования спецсимволов ХТМЛ
   /// </summary>
-  /// <param name="sb"></param>
+  /// <param name="s"></param>
   /// <returns>Результат</returns>
   public static string Preserve(string sb) =>
     sb.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");

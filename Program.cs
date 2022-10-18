@@ -181,9 +181,8 @@ class Program
   /// <returns>Файл с информацией</returns>
   private static StringBuilder FirstTime(XmlElement root, StringBuilder sb)
   {
-    //TODO: Здесь можно ещё с цп1252/цп1251 попробовать
-    string author = RepairHexString(root.GetInnerString("Author"));
-    string title = RepairHexString(root.GetInnerString("Title"));
+    string? author = RepairString(root.GetInnerString("Author"));
+    string? title = RepairString(root.GetInnerString("Title"));
     sb = sb.Append($"<meta charset=\"utf-8\"><title>{title}</title>\n");
     if (!String.IsNullOrWhiteSpace(author))
       sb = sb.Append($"<meta name=\"author\" content=\"{author}\">\n<style></style>");
