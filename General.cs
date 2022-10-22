@@ -38,7 +38,7 @@ public static class General
   {
     foreach (var c in s)
     {
-      if ( c > 127 && (!(c >= 'À' && c <= 'ÿ') && c != 0xa8 && c != 0xb8))
+      if ( c > 127 && (!(c >= 0xa0 && c <= 'ÿ')))
         return false;
       return true;
     }
@@ -107,9 +107,11 @@ public static class General
       try { return _repairOctalString(s); }
       catch (FormatException e) { return s; }
     }
+    //Так было бы лучше
+    //else  if(TryRecode(s, out string? preresult))
     else if(_isAllPseudoLatin1(s))
     {
-      if(TryRecode(s, out string? preresult))
+      if(TryRecode(s, out string? preresult)) //!
         return preresult;
     }
 
