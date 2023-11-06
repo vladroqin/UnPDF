@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using WeCantSpell.Hunspell;
 
-namespace FuckPDF0;
+namespace UnPDF0;
 
 public static class General
 {

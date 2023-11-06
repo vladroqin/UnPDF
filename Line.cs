@@ -1,4 +1,4 @@
-﻿namespace FuckPDF0;
+﻿namespace UnPDF0;
 
 public class Line
 {

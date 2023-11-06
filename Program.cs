@@ -7,9 +7,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using WeCantSpell.Hunspell;
-using static FuckPDF0.General;
+using static UnPDF0.General;
 
-namespace FuckPDF0;
+namespace UnPDF0;
 
 class Program
 {

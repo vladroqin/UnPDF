@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml;
 
-namespace FuckPDF0;
+namespace UnPDF0;
 
 public class Font
 {

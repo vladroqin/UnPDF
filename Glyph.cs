@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using System.Linq;
 
-namespace FuckPDF0;
+namespace UnPDF0;
 
 public class Glyph
 {
