@@ -2,15 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>_0</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
-    <PackageReference Include="WeCantSpell.Hunspell" Version="3.0.1" />
-    <None Update="totet.sh" CopyToOutputDirectory="PreserveNewest" />
+    <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="WeCantSpell.Hunspell" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

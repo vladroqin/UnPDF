@@ -1,27 +1,27 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Collections.Generic;
 using System.Xml;
 
-namespace UnPDF0;
+namespace UnPDF;
 
 public class Font
 {
-  public string Id;
-  public string Name;
-  public string FullName;
-  public bool Bold;
-  public bool Italic;
-  public bool Sans;
-  public bool TW;
-  public bool Strike;
-  public bool UL;
-  public bool SC;
-  public bool? SupSub;
+  public string Id { get; set; }
+  public string Name { get; set; }
+  public string FullName { get; set; }
+  public bool Bold { get; set; }
+  public bool Italic { get; set; }
+  public bool Sans { get; set; }
+  public bool TW { get; set; }
+  public bool Strike { get; set; }
+  public bool UL { get; set; }
+  public bool SC { get; set; }
+  public bool? SupSub { get; set; }
   public Font(XmlNode node)
   {
-    Id = node.GetString("id");
-    Name = node.GetString("name");
-    FullName = node.GetString("fullname");
+    Id = node.GetString("id")!;
+    Name = node.GetString("name")!;
+    FullName = node.GetString("fullname")!;
     if (node.GetFloat("italicangle") != 0.0)
       Italic = true;
     FontNameAnalyze(Name);
@@ -37,16 +37,4 @@ public class Font
     if (name.Contains("Helvetica") || name.Contains("Arial")) Sans = true;
     if (name.Contains("Courier")) TW = true;
   }
-  public static readonly HashSet<Font> Storage = new();
-  /// <summary>
-  /// Добавить шрифт в хранилище
-  /// </summary>
-  /// <param name="font">Шрифт</param>
-  public static void Add(Font font) => Storage.Add(font);
-  /// <summary>
-  /// Получить шрифт
-  /// </summary>
-  /// <param name="s">Название шрифта</param>
-  /// <returns></returns>
-  public static Font GetFont(string s) => Storage.First(x => x.Id == s);
 }
